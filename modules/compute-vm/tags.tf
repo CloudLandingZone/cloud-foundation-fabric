@@ -15,21 +15,22 @@
  */
 
 resource "google_tags_tag_binding" "binding" {
-  for_each  = var.create_template ? {} : coalesce(var.tag_bindings, {})
-  parent    = "//compute.googleapis.com/${google_compute_instance.default.0.id}"
+  for_each = coalesce(var.tag_bindings, {})
+  parent = (
+    var.create_template
+    ? "//compute.googleapis.com/${google_compute_instance_template.default.0.id}"
+    : "//compute.googleapis.com/${google_compute_instance.default.0.id}"
+  )
   tag_value = each.value
 }
 
-resource "google_tags_location_tag_binding" "network_binding_instance" {
-  for_each  = var.create_template ? {} : coalesce(var.network_tag_bindings, {})
-  location  = var.region
-  parent    = "//compute.googleapis.com/${google_compute_instance.default.0.id}"
-  tag_value = each.value
-}
-
-resource "google_tags_location_tag_binding" "network_binding_instance_template" {
-  for_each  = var.create_template ? coalesce(var.network_tag_bindings, {}) : {}
-  location  = var.region
-  parent    = "//compute.googleapis.com/${google_compute_instance_template.default.0.id}"
+resource "google_tags_location_tag_binding" "network_binding" {
+  for_each = coalesce(var.tag_bindings, {})
+  location = local.region
+  parent = (
+    var.create_template
+    ? "//compute.googleapis.com/${google_compute_instance_template.default.0.id}"
+    : "//compute.googleapis.com/${google_compute_instance.default.0.id}"
+  )
   tag_value = each.value
 }
