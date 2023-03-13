@@ -1,5 +1,5 @@
 /**
- * Copyright 2022 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -156,7 +156,9 @@ module "squid-vm" {
     subnetwork = module.vpc.subnet_self_links["${var.region}/proxy"]
   }]
   boot_disk = {
-    image = "cos-cloud/cos-stable"
+    initialize_params = {
+      image = "cos-cloud/cos-stable"
+    }
   }
   service_account        = module.service-account-squid.email
   service_account_scopes = ["https://www.googleapis.com/auth/cloud-platform"]
@@ -227,8 +229,8 @@ module "folder-apps" {
   name   = "apps"
   org_policies = {
     # prevent VMs with public IPs in the apps folder
-    "constraints/compute.vmExternalIpAccess" = {
-      deny = { all = true }
+    "compute.vmExternalIpAccess" = {
+      rules = [{ deny = { all = true } }]
     }
   }
 }
@@ -261,10 +263,5 @@ module "test-vm" {
     nat        = false
     addresses  = null
   }]
-  boot_disk = {
-    image = "debian-cloud/debian-10"
-    type  = "pd-standard"
-    size  = 10
-  }
   service_account_create = true
 }

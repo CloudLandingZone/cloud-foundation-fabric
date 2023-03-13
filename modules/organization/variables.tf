@@ -1,5 +1,5 @@
 /**
- * Copyright 2022 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -157,10 +157,11 @@ variable "logging_sinks" {
 }
 
 variable "network_tags" {
-  description = "Network tags by key name. The `iam` attribute behaves like the similarly named one at module level."
+  description = "Network tags by key name. If `id` is provided, key creation is skipped. The `iam` attribute behaves like the similarly named one at module level."
   type = map(object({
     description = optional(string, "Managed by the Terraform organization module.")
     iam         = optional(map(list(string)), {})
+    id          = optional(string)
     network     = string # project_id/vpc_name
     values = optional(map(object({
       description = optional(string, "Managed by the Terraform organization module.")
@@ -182,19 +183,6 @@ variable "org_policies" {
   type = map(object({
     inherit_from_parent = optional(bool) # for list policies only.
     reset               = optional(bool)
-
-    # default (unconditional) values
-    allow = optional(object({
-      all    = optional(bool)
-      values = optional(list(string))
-    }))
-    deny = optional(object({
-      all    = optional(bool)
-      values = optional(list(string))
-    }))
-    enforce = optional(bool, true) # for boolean policies only.
-
-    # conditional values
     rules = optional(list(object({
       allow = optional(object({
         all    = optional(bool)
@@ -204,13 +192,13 @@ variable "org_policies" {
         all    = optional(bool)
         values = optional(list(string))
       }))
-      enforce = optional(bool, true) # for boolean policies only.
-      condition = object({
+      enforce = optional(bool) # for boolean policies only.
+      condition = optional(object({
         description = optional(string)
         expression  = optional(string)
         location    = optional(string)
         title       = optional(string)
-      })
+      }), {})
     })), [])
   }))
   default  = {}
@@ -259,13 +247,15 @@ variable "tag_bindings" {
 }
 
 variable "tags" {
-  description = "Tags by key name. The `iam` attribute behaves like the similarly named one at module level."
+  description = "Tags by key name. If `id` is provided, key or value creation is skipped. The `iam` attribute behaves like the similarly named one at module level."
   type = map(object({
     description = optional(string, "Managed by the Terraform organization module.")
     iam         = optional(map(list(string)), {})
+    id          = optional(string)
     values = optional(map(object({
       description = optional(string, "Managed by the Terraform organization module.")
       iam         = optional(map(list(string)), {})
+      id          = optional(string)
     })), {})
   }))
   nullable = false
